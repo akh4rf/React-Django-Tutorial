@@ -9,20 +9,61 @@ import {
   Link,
   Redirect,
 } from "react-router-dom";
+import { Button, ButtonGroup, Grid, Typography } from "@material-ui/core";
 
 export default class HomePage extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      roomCode: null,
+    };
+  }
+
+  // Lifecycle method, runs when component first loads
+  async componentDidMount() {
+    fetch('/api/user-in-room')
+    .then((response) => response.json())
+    .then((data) => {
+      this.setState({
+        roomCode: data.code,
+      });
+    });
+  }
+
+  renderHomePage() {
+    return (
+      <Grid container spacing={3}>
+        <Grid item xs={12} align="center">
+          <Typography variant="h3" component="h3">
+            House Party
+          </Typography>
+        </Grid>
+        <Grid item xs={12} align="center">
+          <ButtonGroup disableElevation variant="contained" color="primary">
+            <Button color="primary" to="/join" component={Link}>
+              Join a Room
+            </Button>
+            <Button color="secondary" to="/create" component={Link}>
+              Create a Room
+            </Button>
+          </ButtonGroup>
+        </Grid>
+      </Grid>
+    );
   }
 
   render() {
-    return <Router>
+    return (
+      <Router>
         <Switch>
-            <Route exact path='/'><p>This is the home page</p></Route>
-            <Route path='/join' component={RoomJoinPage} />
-            <Route path='/create' component={CreateRoomPage} />
-            <Route path='/room/:roomCode' component={Room} />
+          <Route exact path="/" render={() => {
+            return this.state.roomCode ? (<Redirect to={`/room/${this.state.roomCode}`}/>) : this.renderHomePage();
+          }} />
+          <Route path="/join" component={RoomJoinPage} />
+          <Route path="/create" component={CreateRoomPage} />
+          <Route path="/room/:roomCode" component={Room} />
         </Switch>
-    </Router>;
+      </Router>
+    );
   }
 }
